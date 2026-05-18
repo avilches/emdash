@@ -1,6 +1,7 @@
 import { createRPCController } from '@shared/ipc/rpc';
 import { createProject, inspectProjectPath } from './operations/createProject';
 import { deleteProject } from './operations/deleteProject';
+import { getProjectBranchesWithStatus } from './operations/getProjectBranchesWithStatus';
 import { getProjects } from './operations/getProjects';
 import { openProject } from './operations/openProject';
 import { updateProjectConnection } from './operations/updateProjectConnection';
@@ -21,4 +22,5 @@ export const projectController = createRPCController({
     projectSettingsService.migrateProjectConfig(projectId, request),
   updateProjectConnection,
   openProject,
+  getProjectBranchesWithStatus,
 });

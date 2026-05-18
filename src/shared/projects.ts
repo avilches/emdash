@@ -78,3 +78,15 @@ export type ProjectRemoteState = {
   hasRemote: boolean;
   selectedRemoteUrl: string | null;
 };
+
+export type BranchWithStatus = {
+  branch: string;
+  worktreePath?: string;
+  isProjectRoot: boolean;
+  usedByTask?: { id: string; name: string };
+};
+
+export type ProjectBranchesStatusResult = {
+  worktreePoolPath: string;
+  statuses: BranchWithStatus[];
+};
