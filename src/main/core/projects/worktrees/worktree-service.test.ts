@@ -231,6 +231,13 @@ describe('WorktreeService', () => {
   });
 
   describe('checkoutExistingBranch', () => {
+    it('returns the project root path when the branch is checked out there', async () => {
+      const svc = makeService();
+      // 'main' is checked out at repoDir — no worktree needed
+      const result = await svc.checkoutExistingBranch('main');
+      expect(result).toEqual(ok(fs.realpathSync(repoDir)));
+    });
+
     it('returns existing checked out path when branch is already checked out elsewhere', async () => {
       await git(['branch', 'feature/already-open-existing'], { cwd: repoDir });
       const externalDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wt-external-'));
