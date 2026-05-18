@@ -1,18 +1,24 @@
 import type { CreateTaskStrategy } from '@shared/tasks';
+import type { BranchMode } from './use-branch-selection';
 
-type BranchLikeTaskStrategy = Extract<CreateTaskStrategy, { kind: 'new-branch' | 'no-worktree' }>;
+type BranchLikeTaskStrategy = Extract<
+  CreateTaskStrategy,
+  { kind: 'new-branch' | 'no-worktree' | 'checkout-existing' }
+>;
 type PullRequestTaskStrategy = Extract<CreateTaskStrategy, { kind: 'from-pull-request' }>;
 
 export function resolveBranchLikeTaskStrategy(input: {
   isUnborn: boolean;
-  createBranchAndWorktree: boolean;
+  branchMode: BranchMode;
   taskBranch: string;
   pushBranch: boolean;
 }): BranchLikeTaskStrategy {
-  if (input.isUnborn || !input.createBranchAndWorktree) {
+  if (input.isUnborn) {
     return { kind: 'no-worktree' };
   }
-
+  if (input.branchMode === 'checkout') {
+    return { kind: 'checkout-existing' };
+  }
   return {
     kind: 'new-branch',
     taskBranch: input.taskBranch,

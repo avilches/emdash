@@ -133,7 +133,7 @@ export const CreateTaskModal = observer(function CreateTaskModal({
         if (!fromBranch.selectedBranch) return;
         const taskStrategy = resolveBranchLikeTaskStrategy({
           isUnborn,
-          createBranchAndWorktree: fromBranch.createBranchAndWorktree,
+          branchMode: fromBranch.branchMode,
           taskBranch: fromBranch.taskName,
           pushBranch: fromBranch.pushBranch,
         });
@@ -152,7 +152,7 @@ export const CreateTaskModal = observer(function CreateTaskModal({
         if (!fromIssue.selectedBranch) return;
         const taskStrategy = resolveBranchLikeTaskStrategy({
           isUnborn,
-          createBranchAndWorktree: fromIssue.createBranchAndWorktree,
+          branchMode: fromIssue.branchMode,
           taskBranch: fromIssue.taskName,
           pushBranch: fromIssue.pushBranch,
         });
@@ -263,6 +263,7 @@ export const CreateTaskModal = observer(function CreateTaskModal({
               currentBranch={currentBranch}
               isUnborn={isUnborn}
               initialConversation={initialConversation}
+              taskBranchName={fromBranch.taskName}
             />
           )}
           {selectedStrategy === 'from-issue' && (

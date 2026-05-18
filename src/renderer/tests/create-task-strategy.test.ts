@@ -5,11 +5,11 @@ import {
 } from '@renderer/features/tasks/create-task-modal/create-task-strategy';
 
 describe('resolveBranchLikeTaskStrategy', () => {
-  it('returns new-branch with pushBranch when branch/worktree creation is enabled', () => {
+  it('returns new-branch with pushBranch when branchMode is new-branch', () => {
     expect(
       resolveBranchLikeTaskStrategy({
         isUnborn: false,
-        createBranchAndWorktree: true,
+        branchMode: 'new-branch',
         taskBranch: 'issue-task',
         pushBranch: false,
       })
@@ -20,22 +20,22 @@ describe('resolveBranchLikeTaskStrategy', () => {
     });
   });
 
-  it('returns no-worktree when branch/worktree creation is disabled', () => {
+  it('returns checkout-existing when branchMode is checkout', () => {
     expect(
       resolveBranchLikeTaskStrategy({
         isUnborn: false,
-        createBranchAndWorktree: false,
+        branchMode: 'checkout',
         taskBranch: 'issue-task',
         pushBranch: true,
       })
-    ).toEqual({ kind: 'no-worktree' });
+    ).toEqual({ kind: 'checkout-existing' });
   });
 
   it('returns no-worktree for unborn repositories', () => {
     expect(
       resolveBranchLikeTaskStrategy({
         isUnborn: true,
-        createBranchAndWorktree: true,
+        branchMode: 'new-branch',
         taskBranch: 'issue-task',
         pushBranch: true,
       })
