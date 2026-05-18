@@ -154,6 +154,30 @@ export class WorktreeService {
     return undefined;
   }
 
+  getWorktreePoolPath(): string {
+    return this.worktreePoolPath;
+  }
+
+  async getAllCheckedOutBranches(): Promise<
+    Array<{ branch: string; path: string; isMainWorktree: boolean }>
+  > {
+    try {
+      const { stdout } = await this.ctx.exec('git', ['worktree', 'list', '--porcelain']);
+      const blocks = stdout.split('\n\n').filter(Boolean);
+      const result: Array<{ branch: string; path: string; isMainWorktree: boolean }> = [];
+      for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        const pathMatch = /^worktree (.+)$/m.exec(block);
+        const branchMatch = /^branch refs\/heads\/(.+)$/m.exec(block);
+        if (!pathMatch || !branchMatch) continue;
+        result.push({ branch: branchMatch[1], path: pathMatch[1], isMainWorktree: i === 0 });
+      }
+      return result;
+    } catch {
+      return [];
+    }
+  }
+
   async checkoutBranchWorktree(
     sourceBranch: Branch | undefined,
     branchName: string

@@ -184,6 +184,39 @@ describe('WorktreeService', () => {
     });
   });
 
+  describe('getAllCheckedOutBranches', () => {
+    it('returns the main worktree branch with isMainWorktree=true', async () => {
+      const svc = makeService();
+      const result = await svc.getAllCheckedOutBranches();
+      expect(result).toEqual([{ branch: 'main', path: fs.realpathSync(repoDir), isMainWorktree: true }]);
+    });
+
+    it('includes linked worktrees with isMainWorktree=false', async () => {
+      const branchName = 'feature-x';
+      const worktreePath = path.join(poolDir, branchName);
+      await git(['branch', branchName], { cwd: repoDir });
+      await git(['worktree', 'add', worktreePath, branchName], { cwd: repoDir });
+
+      const svc = makeService();
+      const result = await svc.getAllCheckedOutBranches();
+      expect(result).toContainEqual({ branch: 'main', path: fs.realpathSync(repoDir), isMainWorktree: true });
+      expect(result).toContainEqual({ branch: branchName, path: fs.realpathSync(worktreePath), isMainWorktree: false });
+    });
+
+    it('returns empty array when git command fails', async () => {
+      const svc = makeService({ repoPath: '/nonexistent' });
+      const result = await svc.getAllCheckedOutBranches();
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getWorktreePoolPath', () => {
+    it('returns the configured pool path', () => {
+      const svc = makeService({ worktreePoolPath: poolDir });
+      expect(svc.getWorktreePoolPath()).toBe(poolDir);
+    });
+  });
+
   describe('checkoutExistingBranch', () => {
     it('returns existing checked out path when branch is already checked out elsewhere', async () => {
       await git(['branch', 'feature/already-open-existing'], { cwd: repoDir });
