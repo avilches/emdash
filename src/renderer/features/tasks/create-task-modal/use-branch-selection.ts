@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import type { Branch } from '@shared/git';
 import { useAppSettingsKey } from '@renderer/features/settings/use-app-settings-key';
 
+export type BranchMode = 'new-branch' | 'checkout';
 export type BranchSelectionState = ReturnType<typeof useBranchSelection>;
 
 export function useBranchSelection(
@@ -14,28 +15,27 @@ export function useBranchSelection(
   const { value: project } = useAppSettingsKey('project');
   const pushOnCreateByDefault = project?.pushOnCreate ?? true;
 
-  const [createBranchAndWorktreeOverride, setCreateBranchAndWorktreeOverride] = useState<
-    boolean | undefined
-  >(undefined);
+  const [branchModePreference, setBranchModePreference] = useState<BranchMode>(
+    createBranchAndWorktreeByDefault ? 'new-branch' : 'checkout'
+  );
   const [pushBranchOverride, setPushBranchOverride] = useState<boolean | undefined>(undefined);
-  const pushBranch = pushBranchOverride ?? pushOnCreateByDefault;
-  const createBranchAndWorktreePreference =
-    createBranchAndWorktreeOverride ?? createBranchAndWorktreeByDefault;
-  const createBranchAndWorktree = isUnborn ? false : createBranchAndWorktreePreference;
 
-  // Store the user's branch override alongside the project it belongs to.
-  // When the project changes the override is for a different project and is
-  // ignored, so defaultBranch takes effect automatically — no effect needed.
+  const branchMode: BranchMode = isUnborn ? 'checkout' : branchModePreference;
+  const pushBranch = pushBranchOverride ?? pushOnCreateByDefault;
+
   const [branchOverride, setBranchOverride] = useState<
     { projectId: string; branch: Branch } | undefined
   >(undefined);
 
+  const defaultSelectedBranch: Branch | undefined =
+    currentBranchName ? { type: 'local', branch: currentBranchName } : defaultBranch;
+
   const selectedBranch: Branch | undefined =
-    !createBranchAndWorktree && currentBranchName
-      ? { type: 'local', branch: currentBranchName }
-      : branchOverride !== undefined && branchOverride.projectId === selectedProjectId
-        ? branchOverride.branch
-        : defaultBranch;
+    branchOverride !== undefined && branchOverride.projectId === selectedProjectId
+      ? branchOverride.branch
+      : branchMode === 'new-branch'
+        ? defaultBranch
+        : defaultSelectedBranch;
 
   const setSelectedBranch = useCallback(
     (branch: Branch | undefined) => {
@@ -47,22 +47,25 @@ export function useBranchSelection(
     },
     [selectedProjectId]
   );
+
   const setPushBranch = useCallback((value: boolean) => {
     setPushBranchOverride(value);
   }, []);
-  const setCreateBranchAndWorktree = useCallback(
-    (value: boolean) => {
+
+  const setBranchMode = useCallback(
+    (value: BranchMode) => {
       if (isUnborn) return;
-      setCreateBranchAndWorktreeOverride(value);
+      setBranchModePreference(value);
+      setBranchOverride(undefined);
     },
     [isUnborn]
   );
 
   return {
+    branchMode,
+    setBranchMode,
     selectedBranch,
     setSelectedBranch,
-    createBranchAndWorktree,
-    setCreateBranchAndWorktree,
     pushBranch,
     setPushBranch,
   };
