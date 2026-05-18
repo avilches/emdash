@@ -37,7 +37,7 @@ export function useFromBranchMode(
     queryKey: ['branchStatuses', selectedProjectId],
     queryFn: () =>
       rpc.projects.getProjectBranchesWithStatus({ projectId: selectedProjectId! }),
-    enabled: branchSelection.branchMode === 'checkout' && !!selectedProjectId,
+    enabled: !!selectedProjectId,
     refetchOnWindowFocus: false,
   });
 
