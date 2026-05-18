@@ -42,6 +42,11 @@ interface BranchSelectorProps {
   isRefreshing?: boolean;
   remotes?: Remote[];
   selectedRemoteName?: string;
+  getExtraProps?: (branch: Branch) => {
+    subtitle?: string;
+    badge?: string;
+    disabled?: boolean;
+  };
 }
 
 export function BranchSelector({
@@ -55,6 +60,7 @@ export function BranchSelector({
   isRefreshing = false,
   remotes,
   selectedRemoteName,
+  getExtraProps,
 }: BranchSelectorProps) {
   const valueKey =
     value?.type === 'remote'
@@ -90,12 +96,17 @@ export function BranchSelector({
 
   const options = useMemo(
     () =>
-      filteredBranches.map((branch) => ({
-        value: branch,
-        label: getBranchLabel(branch, { remote: branchLabelRemote }),
-        disabled: branch.branch.startsWith('_reserve'),
-      })),
-    [branchLabelRemote, filteredBranches]
+      filteredBranches.map((branch) => {
+        const extra = getExtraProps?.(branch);
+        return {
+          value: branch,
+          label: getBranchLabel(branch, { remote: branchLabelRemote }),
+          disabled: branch.branch.startsWith('_reserve') || (extra?.disabled ?? false),
+          subtitle: extra?.subtitle,
+          badge: extra?.badge,
+        };
+      }),
+    [branchLabelRemote, filteredBranches, getExtraProps]
   );
 
   return (
@@ -202,7 +213,17 @@ export function BranchSelector({
         <ComboboxList>
           {(item) => (
             <ComboboxItem value={item} disabled={item.disabled}>
-              {item.label}
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <span className="text-xs text-foreground-muted">{item.badge}</span>
+                  )}
+                </div>
+                {item.subtitle && (
+                  <span className="text-xs text-foreground-muted truncate">{item.subtitle}</span>
+                )}
+              </div>
             </ComboboxItem>
           )}
         </ComboboxList>

@@ -13,6 +13,11 @@ export interface ProjectBranchSelectorProps {
   branchLabelRemote?: BranchLabelRemoteMode;
   trigger?: React.ReactNode;
   showRemoteSelectorFooter?: boolean;
+  getExtraProps?: (branch: Branch) => {
+    subtitle?: string;
+    badge?: string;
+    disabled?: boolean;
+  };
 }
 
 export const ProjectBranchSelector = observer(function ProjectBranchSelector({
@@ -24,6 +29,7 @@ export const ProjectBranchSelector = observer(function ProjectBranchSelector({
   branchLabelRemote,
   trigger,
   showRemoteSelectorFooter = false,
+  getExtraProps,
 }: ProjectBranchSelectorProps) {
   const repo = getRepositoryStore(projectId);
   const selectedRemoteName =
@@ -49,6 +55,7 @@ export const ProjectBranchSelector = observer(function ProjectBranchSelector({
       selectedRemoteName={
         showRemoteSelectorFooter || remoteName !== undefined ? selectedRemoteName : undefined
       }
+      getExtraProps={getExtraProps}
     />
   );
 });
