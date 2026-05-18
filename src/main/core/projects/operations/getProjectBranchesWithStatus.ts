@@ -10,6 +10,7 @@ export async function getProjectBranchesWithStatus({
   projectId: string;
 }): Promise<ProjectBranchesStatusResult> {
   const provider = projectManager.getProject(projectId);
+  // Project not mounted — return empty result rather than throwing.
   if (!provider) return { worktreePoolPath: '', statuses: [] };
 
   const [checkedOutBranches, activeTasks] = await Promise.all([
@@ -24,7 +25,9 @@ export async function getProjectBranchesWithStatus({
 
   const worktreeMap = new Map(checkedOutBranches.map((w) => [w.branch, w]));
   const taskMap = new Map(
-    activeTasks.map((t) => [t.taskBranch!, { id: t.id, name: t.name }])
+    activeTasks.flatMap((t) =>
+      t.taskBranch ? [[t.taskBranch, { id: t.id, name: t.name }] as const] : []
+    )
   );
 
   const result: ProjectBranchesStatusResult['statuses'] = [];
