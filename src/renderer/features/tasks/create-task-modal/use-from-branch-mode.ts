@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { type Branch } from '@shared/git';
+import type { Branch } from '@shared/git';
+import type { ProjectBranchesStatusResult } from '@shared/projects';
 import { useTaskSettings } from '@renderer/features/tasks/hooks/useTaskSettings';
 import { rpc } from '@renderer/lib/ipc';
 import { useBranchSelection } from './use-branch-selection';
@@ -32,6 +33,14 @@ export function useFromBranchMode(
     refetchOnWindowFocus: false,
   });
 
+  const { data: branchStatuses } = useQuery<ProjectBranchesStatusResult>({
+    queryKey: ['branchStatuses', selectedProjectId],
+    queryFn: () =>
+      rpc.projects.getProjectBranchesWithStatus({ projectId: selectedProjectId! }),
+    enabled: branchSelection.branchMode === 'checkout' && !!selectedProjectId,
+    refetchOnWindowFocus: false,
+  });
+
   const taskName = useTaskName({
     generatedName: autoGenerateName ? generatedName : undefined,
     isPending: autoGenerateName && isGenerating,
@@ -46,6 +55,7 @@ export function useFromBranchMode(
   return {
     ...branchSelection,
     ...taskName,
+    branchStatuses,
     isValid,
   };
 }
