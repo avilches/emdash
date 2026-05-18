@@ -201,6 +201,19 @@ describe('WorktreeService', () => {
       const result = await svc.getAllCheckedOutBranches();
       expect(result).toContainEqual({ branch: 'main', path: fs.realpathSync(repoDir), isMainWorktree: true });
       expect(result).toContainEqual({ branch: branchName, path: fs.realpathSync(worktreePath), isMainWorktree: false });
+      expect(result[0].isMainWorktree).toBe(true);
+    });
+
+    it('skips worktrees in detached HEAD state', async () => {
+      const branchName = 'feature-detached';
+      const worktreePath = path.join(poolDir, branchName);
+      await git(['branch', branchName], { cwd: repoDir });
+      await git(['worktree', 'add', '--detach', worktreePath, branchName], { cwd: repoDir });
+
+      const svc = makeService();
+      const result = await svc.getAllCheckedOutBranches();
+      const paths = result.map((r) => r.path);
+      expect(paths).not.toContain(fs.realpathSync(worktreePath));
     });
 
     it('returns empty array when git command fails', async () => {
